@@ -3,7 +3,12 @@ A framework for RimWorld mods that show hints for new features in a mod
 
 Make your mods features discoverable with this framework! A lot of mod users have 
 never seen your workshop page or have read your documentation. They install a modlist 
-and suddenly have access to a new feature that they don't understand.
+and suddenly have access to a new feature that they don't understand:
+
+<p align="center">
+   <img src="Originals/standardhint-example.png" alt="StandardHint in Achtung" />
+   <br/><b>Example: Standard hint in the mod Achtung</b>
+</p>
 
 To solve this, this framework makes it easy for you to present hints to the user 
 whenever some observable effect is produced by your code. All you have to do is:
