@@ -11,7 +11,12 @@ and suddenly have access to a new feature that they don't understand:
 </p>
 
 To solve this, this framework makes it easy for you to present hints to the user 
-whenever some observable effect is produced by your code. All you have to do is:
+whenever some observable effect is produced by your code. All you have to do is to
+follow the steps below.
+
+## Installation
+
+Add the nuget package [MagicTutor](https://www.nuget.org/packages/MagicTutor/) to your project or download the latest release from this repository.
 
 ## Basic usage
 
