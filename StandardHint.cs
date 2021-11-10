@@ -5,16 +5,15 @@ namespace Brrainz
 {
 	public class StandardHint : Hint
 	{
-		const float contentWidth = 400;
-		const float borderWidth = 4;
-		const float padding = 12;
-		const float headerHeight = 50;
+		public static readonly float borderWidth = 4;
+		public static readonly float padding = 12;
+		public static readonly float headerHeight = 50;
 
 		public override Vector2 WindowSize(Rect areaOfInterest)
 		{
 			var outerSpacing = 2 * (borderWidth + borderWidth + padding);
-			var width = contentWidth + outerSpacing;
-			var height = headerHeight + padding + message.Height(contentWidth, GameFont.Small) + outerSpacing;
+			var width = ContentWidth + outerSpacing;
+			var height = headerHeight + padding + ContentHeight + outerSpacing;
 
 			var (primary, secondary) = GetScreenPosition();
 			if (ShouldAvoidScreenPosition(primary)) primary = secondary;
@@ -49,10 +48,11 @@ namespace Brrainz
 
 		public string message = "";
 
-		public override void DoWindowContents(Rect canvas)
-		{
-			// GUI.DrawTexture(canvas, StaticGraphics.debugTexture, ScaleMode.StretchToFill, true, 1f, Color.white, 0, 0);
+		public virtual float ContentWidth => 400f;
+		public virtual float ContentHeight => message.Height(ContentWidth, GameFont.Small);
 
+		public override void DrawWindow(Rect canvas)
+		{
 			var outerRect = canvas;
 
 			var (primary, secondary) = GetScreenPosition();
@@ -79,38 +79,6 @@ namespace Brrainz
 			GUI.DrawTexture(outerRect, StaticGraphics.shadowTexture, ScaleMode.StretchToFill, true, 1f, Color.white, borderWidth, 3 * borderWidth);
 			GUI.DrawTexture(innerRect, StaticGraphics.borderTexture, ScaleMode.StretchToFill, true, 1f, Color.white, borderWidth, 2 * borderWidth);
 
-			innerRect = innerRect.ContractedBy(borderWidth + padding, borderWidth + padding);
-			if (Widgets.ButtonInvisible(innerRect))
-				Acknowledge();
-
-			var headerRect = innerRect.TopPartPixels(headerHeight);
-
-			if (Widgets.ButtonImage(headerRect.RightPartPixels(18).TopPartPixels(18), TexButton.CloseXSmall, true))
-				Acknowledge();
-
-			var thumbnail = tutor.mod.Content.ModMetaData.PreviewImage;
-			if (thumbnail != null)
-			{
-				var previewRect = headerRect.LeftPartPixels(headerHeight * thumbnail.width / thumbnail.height);
-				GUI.DrawTexture(previewRect, tutor.mod.Content.ModMetaData.PreviewImage, ScaleMode.ScaleAndCrop);
-
-				var titleRect = previewRect;
-				titleRect.x += titleRect.width;
-				var aboutRect = Rect.MinMaxRect(previewRect.xMax + padding, previewRect.yMin - 4, headerRect.xMax - 18 - padding, previewRect.yMax);
-				GUI.Label(aboutRect, tutor.mod.Content.Name + "\n" + tutor.mod.Content.ModMetaData.AuthorsString);
-			}
-			else
-				GUI.Label(headerRect, tutor.mod.Content.Name + "\n" + tutor.mod.Content.ModMetaData.AuthorsString);
-
-			//var dismissText = "click here to dismiss";
-			//var tHeight = dismissText.Height(innerRect.width, GameFont.Tiny);
-			//dismissText.Label(innerRect.BottomPartPixels(tHeight), Color.white.ToTransparent(0.8f), GameFont.Tiny, TextAnchor.LowerCenter);
-
-			var messageRect = innerRect;
-			messageRect.yMin = headerRect.yMax + padding;
-			messageRect.yMax = innerRect.yMax;
-			message.Label(messageRect, default, GameFont.Small, TextAnchor.UpperLeft);
-
 			switch (primary)
 			{
 				case ScreenPosition.left:
@@ -126,9 +94,44 @@ namespace Brrainz
 					DrawArrow(new Vector2(outerRect.width / 2, outerRect.height - 2 * borderWidth), 0);
 					break;
 			}
+
+			innerRect = innerRect.ContractedBy(borderWidth + padding, borderWidth + padding);
+
+			DoWindowContents(innerRect);
+
+			if (Widgets.ButtonInvisible(innerRect))
+				Acknowledge();
 		}
 
-		internal void DrawArrow(Vector2 pos, float rotation)
+		public override void DoWindowContents(Rect innerRect)
+		{
+			var content = tutor.CurrentMod.Content;
+			var headerRect = innerRect.TopPartPixels(headerHeight);
+
+			if (Widgets.ButtonImage(headerRect.RightPartPixels(18).TopPartPixels(18), TexButton.CloseXSmall, true))
+				Acknowledge();
+
+			var thumbnail = content.ModMetaData.PreviewImage;
+			if (thumbnail != null)
+			{
+				var previewRect = headerRect.LeftPartPixels(headerHeight * thumbnail.width / thumbnail.height);
+				GUI.DrawTexture(previewRect, content.ModMetaData.PreviewImage, ScaleMode.ScaleAndCrop);
+
+				var titleRect = previewRect;
+				titleRect.x += titleRect.width;
+				var aboutRect = Rect.MinMaxRect(previewRect.xMax + padding, previewRect.yMin - 4, headerRect.xMax - 18 - padding, previewRect.yMax);
+				GUI.Label(aboutRect, content.Name + "\n" + content.ModMetaData.AuthorsString);
+			}
+			else
+				GUI.Label(headerRect, content.Name + "\n" + content.ModMetaData.AuthorsString);
+
+			var messageRect = innerRect;
+			messageRect.yMin = headerRect.yMax + padding;
+			messageRect.yMax = innerRect.yMax;
+			message.Label(messageRect, default, GameFont.Small, TextAnchor.UpperLeft);
+		}
+
+		public virtual void DrawArrow(Vector2 pos, float rotation)
 		{
 			rotation.DrawRotated(pos, () =>
 			{
@@ -138,26 +141,6 @@ namespace Brrainz
 				r.x += StaticGraphics.halfLeftPointerSize.x;
 				GUI.DrawTexture(r, StaticGraphics.halfRightPointer);
 			});
-		}
-
-		private (ScreenPosition, ScreenPosition) GetScreenPosition()
-		{
-			var screenRect = new Rect(0, 0, Screen.width, Screen.height);
-			var delta = screenRect.center - areaOfInterest.center;
-			var primary = delta.x < 0 ? ScreenPosition.right : ScreenPosition.left;
-			var secondary = delta.y < 0 ? ScreenPosition.bottom : ScreenPosition.top;
-			var shouldSwap = false;
-			if (secondary == ScreenPosition.left && areaOfInterest.xMin < screenRect.xMin + 200) shouldSwap = true;
-			if (secondary == ScreenPosition.right && areaOfInterest.xMax > screenRect.xMax - 200) shouldSwap = true;
-			if (secondary == ScreenPosition.top && areaOfInterest.yMin < screenRect.yMin + 200) shouldSwap = true;
-			if (secondary == ScreenPosition.bottom && areaOfInterest.yMax > screenRect.yMax - 200) shouldSwap = true;
-			if (shouldSwap)
-			{
-				var swap = primary;
-				primary = secondary;
-				secondary = swap;
-			}
-			return (primary, secondary);
 		}
 	}
 }
