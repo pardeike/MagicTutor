@@ -6,14 +6,6 @@ namespace Brrainz
 {
 	public static class Tools
 	{
-		public static void DrawRotated(this float degree, Vector2 center, Action drawer)
-		{
-			var oldMatrix = GUI.matrix;
-			GUIUtility.RotateAroundPivot(degree, center);
-			drawer();
-			GUI.matrix = oldMatrix;
-		}
-
 		public static Vector2 SizeWith(this string text, float maxWidth, GameFont font)
 		{
 			var oldFond = Text.Font;

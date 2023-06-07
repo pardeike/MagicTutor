@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
@@ -13,25 +13,29 @@ namespace Brrainz
 		internal static readonly Texture cancelTexture = SolidColorMaterials.NewSolidColorTexture(Color.white.ToTransparent(0.25f));
 		//internal static readonly Texture debugTexture = SolidColorMaterials.NewSolidColorTexture(Color.red.ToTransparent(0.5f));
 
-		private static readonly byte[] halfleftPointerBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAABkAAAAhCAYAAAAswACjAAAFVWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS41LjAiPgogPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICAgeG1sbnM6ZXhpZj0iaHR0cDovL25zLmFkb2JlLmNvbS9leGlmLzEuMC8iCiAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIKICAgIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIKICAgZXhpZjpQaXhlbFhEaW1lbnNpb249IjI1IgogICBleGlmOlBpeGVsWURpbWVuc2lvbj0iMzMiCiAgIGV4aWY6Q29sb3JTcGFjZT0iMSIKICAgdGlmZjpJbWFnZVdpZHRoPSIyNSIKICAgdGlmZjpJbWFnZUxlbmd0aD0iMzMiCiAgIHRpZmY6UmVzb2x1dGlvblVuaXQ9IjIiCiAgIHRpZmY6WFJlc29sdXRpb249Ijk2LzEiCiAgIHRpZmY6WVJlc29sdXRpb249Ijk2LzEiCiAgIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiCiAgIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSIKICAgeG1wOk1vZGlmeURhdGU9IjIwMjEtMTAtMzFUMjI6MjY6MTkrMDE6MDAiCiAgIHhtcDpNZXRhZGF0YURhdGU9IjIwMjEtMTAtMzFUMjI6MjY6MTkrMDE6MDAiPgogICA8ZGM6dGl0bGU+CiAgICA8cmRmOkFsdD4KICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPkhhbGZMZWZ0UG9pbnRlcjwvcmRmOmxpPgogICAgPC9yZGY6QWx0PgogICA8L2RjOnRpdGxlPgogICA8eG1wTU06SGlzdG9yeT4KICAgIDxyZGY6U2VxPgogICAgIDxyZGY6bGkKICAgICAgc3RFdnQ6YWN0aW9uPSJwcm9kdWNlZCIKICAgICAgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWZmaW5pdHkgUGhvdG8gMS4xMC4zIgogICAgICBzdEV2dDp3aGVuPSIyMDIxLTEwLTMxVDIyOjI2OjE5KzAxOjAwIi8+CiAgICA8L3JkZjpTZXE+CiAgIDwveG1wTU06SGlzdG9yeT4KICA8L3JkZjpEZXNjcmlwdGlvbj4KIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+Cjw/eHBhY2tldCBlbmQ9InIiPz7AIOd1AAABgWlDQ1BzUkdCIElFQzYxOTY2LTIuMQAAKJF1kc8rRFEUxz9miAZRJlkoL2FlxCixsZjJr8JiPOXX5s3zZkbNjNd7I8lW2U5RYuPXgr+ArbJWikjJTlkTG6bnPKNmkjm3c8/nfu89p3vPBY+a1FN2eTek0hkrMhJSZmbnlMpnfLTgpxGPptvmxNSwSkn7uKPMjTcBt1bpc/9a9aJh61BWJTyom1ZGeFR4fDVjurwt7NcT2qLwqXCnJRcUvnX1aJ5fXI7n+ctlS42EwVMvrMSLOFrEesJKCcvLaUslV/Tf+7gvqTHS01MSW8WbsYkwQgiFMYYI00cPAzL3ESBIl6wokd/9kz/JsuTqMpusYbFEnAQZOkVdkeqGxJjohowka27///bVjvUG89VrQlDx5Dhv7VC5Bbms43weOk7uCLyPcJEu5C8fQP+76NmC1rYPdRtwdlnQojtwvglND6ZmaT+SV9wTi8HrCdTOQsM1+ObzPfvd5/ge1HX5qivY3YMOOV+38A1Na2fauFuU8wAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAZtJREFUSIm10U8rRFEYx/HvmWFxc7vGlQWThabsFUbZYSEsJCJkIWYheQFWEkulsZaFBi9hlpIJb8CfQsxiMkbJasadcizMIMy4f878lr8659PzPIJCGhqb14FlKhAfgJSy8zGVXI7MzVbC+ECABYC11RVmpieVI34pZT2wA1QB9PX2cHef5PziQhniA1qB6s/C52Nrc4OhwQFliACQUk4AMb7Wx6tl0RHu5iGdVoOUgrLZLO1d3WQyT56Qzw+FEAfAFPBW7DRN4yxxRL1pqkFKQbquc5o4oi4Q8ISEgHkgAkSEEEY0Gt3+DtXWGpwcH2IYhivEDzwDL0ALhRvF4/GUaZrpcDjcVuw0TWN8bJTd2B6WZTlGsAvpeg2jI8PsxvbJ5/OOEduQYRgsLS5wc3PL5dWVY8Q2JIRgcKDfNvQTqQj0F6IcKoUohcohyqD/ECWQHcQzZBfxBDlBXENOEVeQG8Qx5BZxBHlBbENeEVuQCqQklMvlroPBYFyUfeo8IaCnCBUiVU1SzK+JULiuslAlkF+Q6pv8TBMQeAf0HBOg7MIkgAAAAABJRU5ErkJggg==");
-		internal static readonly Texture2D halfLeftPointer;
-		internal static readonly Texture2D halfRightPointer;
-		internal static readonly Vector2 halfLeftPointerSize;
-
-		static StaticGraphics()
+		internal static readonly Dictionary<ScreenPosition, Texture2D> arrows = new Dictionary<ScreenPosition, Texture2D>()
 		{
-			halfLeftPointer = new Texture2D(1, 1);
-			_ = halfLeftPointer.LoadImage(halfleftPointerBytes);
-			halfLeftPointerSize = new Vector2(halfLeftPointer.width, halfLeftPointer.height);
+			{ ScreenPosition.left, LoadResource("Brrainz.images.arrow-left.png") },
+			{ ScreenPosition.right, LoadResource("Brrainz.images.arrow-right.png") },
+			{ ScreenPosition.top, LoadResource("Brrainz.images.arrow-up.png") },
+			{ ScreenPosition.bottom, LoadResource("Brrainz.images.arrow-down.png") },
+		};
 
-			halfRightPointer = new Texture2D(halfLeftPointer.width, halfLeftPointer.height);
+		internal static readonly float arrowLeftRightWidth = arrows[ScreenPosition.left].width;
+		internal static readonly float arrowLeftRightHeight = arrows[ScreenPosition.left].height;
 
-			var xN = halfRightPointer.width;
-			var yN = halfRightPointer.height;
-			for (int i = 0; i < xN; i++)
-				for (int j = 0; j < yN; j++)
-					halfRightPointer.SetPixel(xN - i - 1, j, halfLeftPointer.GetPixel(i, j));
-			halfRightPointer.Apply();
+		internal static readonly float arrowTopDownWidth = arrows[ScreenPosition.top].width;
+		internal static readonly float arrowTopDownHeight = arrows[ScreenPosition.top].height;
+
+		static Texture2D LoadResource(string name)
+		{
+			var stream = typeof(MagicTutor).Assembly.GetManifestResourceStream(name);
+			var bytes = new byte[stream.Length];
+			stream.Read(bytes, 0, bytes.Length);
+			var texture = new Texture2D(1, 1);
+			texture.filterMode = FilterMode.Point;
+			texture.LoadImage(bytes, true);
+			return texture;
 		}
 	}
 }

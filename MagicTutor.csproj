@@ -50,6 +50,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="images\arrow-down.png" />
+	  <None Remove="images\arrow-left.png" />
+	  <None Remove="images\arrow-right.png" />
+	  <None Remove="images\arrow-up.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="images\arrow-down.png" />
+	  <EmbeddedResource Include="images\arrow-left.png" />
+	  <EmbeddedResource Include="images\arrow-right.png" />
+	  <EmbeddedResource Include="images\arrow-up.png" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="App.config" />
 		<None Include="LICENSE">
 		  <Pack>True</Pack>

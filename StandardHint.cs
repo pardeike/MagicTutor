@@ -21,11 +21,11 @@ namespace Brrainz
 			{
 				case ScreenPosition.left:
 				case ScreenPosition.right:
-					width += StaticGraphics.halfLeftPointerSize.y;
+					width += StaticGraphics.arrowLeftRightWidth - 1 - borderWidth;
 					break;
 				case ScreenPosition.top:
 				case ScreenPosition.bottom:
-					height += StaticGraphics.halfLeftPointerSize.y;
+					height += StaticGraphics.arrowTopDownHeight - 1 - borderWidth;
 					break;
 			}
 			return new Vector2(width, height);
@@ -60,16 +60,16 @@ namespace Brrainz
 			switch (primary)
 			{
 				case ScreenPosition.left:
-					outerRect.xMin += StaticGraphics.halfLeftPointerSize.y;
+					outerRect.xMin += StaticGraphics.arrowLeftRightWidth - 1 - borderWidth;
 					break;
 				case ScreenPosition.right:
-					outerRect.xMax -= StaticGraphics.halfLeftPointerSize.y;
+					outerRect.xMax -= StaticGraphics.arrowLeftRightWidth - 1 - borderWidth;
 					break;
 				case ScreenPosition.top:
-					outerRect.yMin += StaticGraphics.halfLeftPointerSize.y;
+					outerRect.yMin += StaticGraphics.arrowTopDownHeight - 1 - borderWidth;
 					break;
 				case ScreenPosition.bottom:
-					outerRect.yMax -= StaticGraphics.halfLeftPointerSize.y;
+					outerRect.yMax -= StaticGraphics.arrowTopDownHeight - 1 - borderWidth;
 					break;
 			}
 
@@ -79,21 +79,30 @@ namespace Brrainz
 			GUI.DrawTexture(outerRect, StaticGraphics.shadowTexture, ScaleMode.StretchToFill, true, 1f, Color.white, borderWidth, 3 * borderWidth);
 			GUI.DrawTexture(innerRect, StaticGraphics.borderTexture, ScaleMode.StretchToFill, true, 1f, Color.white, borderWidth, 2 * borderWidth);
 
+			var r = canvas;
 			switch (primary)
 			{
 				case ScreenPosition.left:
-					DrawArrow(new Vector2(2 * borderWidth + StaticGraphics.halfLeftPointerSize.y, outerRect.height / 2), 90);
+					r.x = borderWidth;
+					r.y = canvas.center.y - Mathf.RoundToInt(StaticGraphics.arrowLeftRightHeight / 2);
 					break;
 				case ScreenPosition.right:
-					DrawArrow(new Vector2(outerRect.width - 2 * borderWidth, outerRect.height / 2), 270);
+					r.x = canvas.xMax - StaticGraphics.arrowLeftRightWidth - borderWidth;
+					r.y = canvas.center.y - Mathf.RoundToInt(StaticGraphics.arrowLeftRightHeight / 2);
 					break;
 				case ScreenPosition.top:
-					DrawArrow(new Vector2(outerRect.width / 2, 2 * borderWidth + StaticGraphics.halfLeftPointerSize.y), 180);
+					r.x = canvas.center.x - Mathf.RoundToInt(StaticGraphics.arrowTopDownWidth / 2);
+					r.y = borderWidth;
 					break;
 				case ScreenPosition.bottom:
-					DrawArrow(new Vector2(outerRect.width / 2, outerRect.height - 2 * borderWidth), 0);
+					r.x = innerRect.x + innerRect.width / 2 - StaticGraphics.arrowTopDownWidth / 2;
+					r.y = canvas.yMax - StaticGraphics.arrowTopDownHeight - borderWidth;
 					break;
 			}
+			var arrow = StaticGraphics.arrows[primary];
+			r.width = arrow.width;
+			r.height = arrow.height;
+			GUI.DrawTexture(r, arrow, ScaleMode.ScaleAndCrop, true);
 
 			innerRect = innerRect.ContractedBy(borderWidth + padding, borderWidth + padding);
 
@@ -129,18 +138,6 @@ namespace Brrainz
 			messageRect.yMin = headerRect.yMax + padding;
 			messageRect.yMax = innerRect.yMax;
 			message.Label(messageRect, default, GameFont.Small, TextAnchor.UpperLeft);
-		}
-
-		public virtual void DrawArrow(Vector2 pos, float rotation)
-		{
-			rotation.DrawRotated(pos, () =>
-			{
-				var r = new Rect(pos, StaticGraphics.halfLeftPointerSize);
-				r.x -= StaticGraphics.halfLeftPointerSize.x;
-				GUI.DrawTexture(r, StaticGraphics.halfLeftPointer);
-				r.x += StaticGraphics.halfLeftPointerSize.x;
-				GUI.DrawTexture(r, StaticGraphics.halfRightPointer);
-			});
 		}
 	}
 }
