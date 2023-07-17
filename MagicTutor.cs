@@ -39,7 +39,7 @@ namespace Brrainz
 
 		private static void AddTutorToOnGUI()
 		{
-			var original = AccessTools.Method(typeof(Root), nameof(Root.OnGUI));
+			var original = AccessTools.Method(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI));
 			var patch = SymbolExtensions.GetMethodInfo(() => HintsOnGUI());
 			if (Harmony.GetPatchInfo(original)?.Postfixes?.FirstOrDefault(postfix => postfix?.owner == tutorID) == null)
 			{
@@ -114,13 +114,25 @@ namespace Brrainz
 			delaySource?.Dispose();
 		}
 
+		private static Rect screenRect = Rect.zero;
+		private static GUI.WindowFunction innerWindowOnGUICached = new GUI.WindowFunction(_ => { });
+
 		private static void HintsOnGUI()
 		{
+			GUI.color = Color.clear;
+			GUI.Window(tutorWindowID, screenRect, innerWindowOnGUICached, "", Widgets.EmptyStyle);
+			GUI.BringWindowToFront(tutorWindowID);
+
 			if (LongEventHandler.ShouldWaitForEvent) return;
-			if (Event.current.type != EventType.Repaint) return;
+			//if (Event.current.type != EventType.Repaint) return;
 
 			ref object obj = ref hintDelegate();
-			if (!(obj is Hint renderedHint)) return;
+			if (!(obj is Hint renderedHint))
+			{
+				screenRect = Rect.zero;
+				innerWindowOnGUICached = new GUI.WindowFunction(_ => { });
+				return;
+			}
 
 			if (renderedHint.visibleTime == TimeSpan.Zero)
 				ClearCurrentHint();
@@ -139,13 +151,15 @@ namespace Brrainz
 			}
 
 			var windowSize = renderedHint.WindowSize(renderedHint.areaOfInterest);
-			var rect = new Rect(renderedHint.areaOfInterest.center - windowSize / 2 + renderedHint.WindowOffset(renderedHint.areaOfInterest), windowSize);
+			screenRect = new Rect(renderedHint.areaOfInterest.center - windowSize / 2 + renderedHint.WindowOffset(renderedHint.areaOfInterest), windowSize);
 
-			Find.WindowStack.ImmediateWindow(tutorWindowID, rect, WindowLayer.Super, () =>
+			innerWindowOnGUICached = new GUI.WindowFunction(id =>
 			{
-				rect = rect.AtZero();
-				renderedHint.DrawWindow(rect);
-			}, false, false, 0f);
+				//OriginalEventUtility.RecordOriginalEvent(Event.current);
+				//Find.WindowStack.currentlyDrawnWindow = null;
+				renderedHint.DrawWindow(screenRect.AtZero());
+				//OriginalEventUtility.Reset();
+			});
 		}
 
 		private static void GetWindowAt_HidingUs(ref Window __result)
